@@ -7,7 +7,7 @@ Original file is located at
     https://colab.research.google.com/github/steffenmodest/Python_Examples/blob/Protocol/M_Net_1.ipynb
 """
 
-from m_net_1 import H_test, X_pred
+# from m_net_1 import H_test, X_pred
 import os.path
 
 import numpy as np
@@ -136,11 +136,8 @@ def main():
     print(accuracy_score(y_test, y_pred))
     print(classification_report(y_test, y_pred))
 
-    prot_row(results)
-
-    pd.DataFrame([results])
-
-    results
+    df_results = pd.DataFrame([results])
+    prot_row(df_results)
 
     return
 
@@ -158,7 +155,7 @@ def rms_norm(v_x):
     return v_x/n_rms
 
 
-def prot_row(df_results, results_templ):
+def prot_row(df_results):
     """
     make a new row in protokoll
 
@@ -180,9 +177,9 @@ def prot_row(df_results, results_templ):
         df_prot = pd.read_excel (prot_file)
         df_prot = df_prot.append(df_results, 
                           ignore_index=True)
-    else:
-        # df_prot = pd.DataFrame.from_dict(d_results)
-        df_prot = pd.DataFrame([results_templ])
+    # else:
+    #     # df_prot = pd.DataFrame.from_dict(d_results)
+    #     df_prot = pd.DataFrame([results_templ])
         # pf_prot = pd.DataFrame.from_records([d_results], index='TIMESTAMP')
         # df_prot = pd.DataFrame(columns=('TIMESTAMP', 
         #                                 'NUMBER_OF_HIDDEN', 
