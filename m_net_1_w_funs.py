@@ -30,7 +30,7 @@ from sklearn.neighbors import KNeighborsClassifier
 # from google.colab import drive
 # drive.mount('/content/drive')
 
-def main():
+def main(n_hidden=47):
 
     rs = 23  # fester Random Seed
 
@@ -45,7 +45,7 @@ def main():
     print(y_train.shape)
     print(y_test.shape)
 
-    results, params = set_params_results()
+    results, params = set_params_results(n_hidden)
 
     # NEW Norm
 
@@ -219,9 +219,9 @@ def prot_row(df_results):
     return None
 
 """Params and Results"""
-def set_params_results():
+def set_params_results(n_hidden):
 
-  params = {'N_HIDDEN': 47}
+  params = {'N_HIDDEN': n_hidden}
   results = {'TIMESTAMP': datetime.now(),
             'NUMBER_OF_HIDDEN': params['N_HIDDEN'],
             'ACCURACY_SCORE': 0, 
@@ -327,4 +327,5 @@ def knn_test(H_test, H, y_train,):
 # Code starting point
 
 if __name__ == '__main__':
-    main()
+    for i in range(10, 60, 1):
+        main(n_hidden=i)
