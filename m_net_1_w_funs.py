@@ -30,20 +30,20 @@ from sklearn.neighbors import KNeighborsClassifier
 # from google.colab import drive
 # drive.mount('/content/drive')
 
-def main(n_hidden=47):
+def main(X_train, X_test, y_train, y_test, n_hidden=47, ):
 
     rs = 23  # fester Random Seed
 
     """Load Data"""
 
-    # Fashion MNIST Daten laden, wir wollen nur die Trainingsdaten und verwerfen die Testdaten
-    # (X_train, y_train), (X_test, y_test) = fashion_mnist.load_data()
-    (X_train, y_train), (X_test, y_test) = mnist.load_data()
+    # # Fashion MNIST Daten laden, wir wollen nur die Trainingsdaten und verwerfen die Testdaten
+    # # (X_train, y_train), (X_test, y_test) = fashion_mnist.load_data()
+    # (X_train, y_train), (X_test, y_test) = mnist.load_data()
 
-    print(X_train.shape)
-    print(X_test.shape)
-    print(y_train.shape)
-    print(y_test.shape)
+    # print(X_train.shape)
+    # print(X_test.shape)
+    # print(y_train.shape)
+    # print(y_test.shape)
 
     results, params = set_params_results(n_hidden)
 
@@ -340,9 +340,23 @@ def knn_test(H_test, H, y_train,):
 
     return y_pred
 
+def load_data():
+
+    # Fashion MNIST Daten laden, wir wollen nur die Trainingsdaten und verwerfen die Testdaten
+    # (X_train, y_train), (X_test, y_test) = fashion_mnist.load_data()
+    (X_train, y_train), (X_test, y_test) = mnist.load_data()
+
+    print(X_train.shape)
+    print(X_test.shape)
+    print(y_train.shape)
+    print(y_test.shape)
+
+    return X_train, X_test, y_train, y_test
+
 
 # Code starting point
 
 if __name__ == '__main__':
+    X_train, X_test, y_train, y_test = load_data()
     for i in range(10, 60, 1):
-        main(n_hidden=i)
+        main(X_train, X_test, y_train, y_test, n_hidden=i)
