@@ -316,12 +316,12 @@ def back_activation(W, X):
 def knn_test(H_test, H, y_train,):
 
     # k1
-    neigh = KNeighborsClassifier(n_neighbors=11, n_jobs=-1, weights='distance')
+    neigh = KNeighborsClassifier(n_neighbors=5, n_jobs=-1, weights='distance')
     neigh.fit(H, y_train)
     # Predicting the Test set results
     y_pred_1 = neigh.predict(H_test)
     # k2
-    neigh = KNeighborsClassifier(n_neighbors=5, n_jobs=-1, weights='distance')
+    neigh = KNeighborsClassifier(n_neighbors=3, n_jobs=-1, weights='distance')
     neigh.fit(H, y_train)
     # Predicting the Test set results
     y_pred_2 = neigh.predict(H_test)
