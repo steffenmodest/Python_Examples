@@ -344,5 +344,5 @@ def knn_test(H_test, H, y_train,):
 # Code starting point
 
 if __name__ == '__main__':
-    for i in range(10, 11, 1):
+    for i in range(10, 60, 1):
         main(n_hidden=i)
