@@ -35,44 +35,7 @@ def main(X, X_T, y_train, y_test, n_hidden=23):
     rs = 23  # fester Random Seed
     np.random.seed(rs)
 
-    """Load Data"""
-
-    # # Fashion MNIST Daten laden, wir wollen nur die Trainingsdaten und verwerfen die Testdaten
-    # # (X_train, y_train), (X_test, y_test) = fashion_mnist.load_data()
-    # (X_train, y_train), (X_test, y_test) = mnist.load_data()
-
-    # print(X_train.shape)
-    # print(X_test.shape)
-    # print(y_train.shape)
-    # print(y_test.shape)
-
     results, params = set_params_results(n_hidden)
-
-    # NEW Norm
-
-    # X = X_train.reshape(len(X_train), -1).astype('int')
-    # X = pd.DataFrame(X)
-    # X = X.applymap(ifelse)
-    # X = X.apply(rms_norm, axis=1)
-    # X = np.array(X)
-
-    # X
-
-    # Plätte 2D Bild in einen Vektor:
-    # Reshape behält die Anzahl Element in der ersten Dimension (len(X_orig) -> #Bilder)
-    # die restlichen Zellen des Arrays (-1 -> Pixel) bekommen alle ihre eigene Dimension
-    # X = X_train.reshape(len(X_train), -1).astype('float64')
-
-    # # Dimensionen um den Mittelpunkt zentrieren
-    # preproccessing = StandardScaler()
-    # X = preproccessing.fit_transform(X)
-    # X = np.array(X)
-
-    # print ("Originaldaten:")
-    # print("Shape: {}, Mean: {:f}, STD: {:f}".format(X_train.shape, np.mean(X_train), np.std(X_train)))
-
-    # print ("Vorbereitete Daten:")
-    # print("Shape: {}, Mean: {:f}, STD: {:f}".format(X.shape, np.mean(X), np.std(X)))
 
     """Create Hidden Activations"""
     H = np.random.rand(60000, params['N_HIDDEN'])
@@ -105,18 +68,6 @@ def main(X, X_T, y_train, y_test, n_hidden=23):
     results['MAE_2ND_BA'] = round(mean_absolute_error(XT_pred, XT), 3)
     results['MSE_2ND_BA'] = round(mean_squared_error(XT_pred, XT), 3)
     results['R2_2ND_BA'] = round(r2_score(XT_pred, XT, multioutput="variance_weighted"), 3)
-
-    # X = X_test.reshape(len(X_test), -1).astype('int')
-    # X = pd.DataFrame(X)
-    # X = X.applymap(ifelse)
-    # X = X.apply(rms_norm, axis=1)
-    # X = np.array(X)
-
-    # print ("Originaldaten:")
-    # print("Shape: {}, Mean: {:f}, STD: {:f}".format(X_test.shape, np.mean(X_test), np.std(X_test)))
-
-    # print ("Vorbereitete Daten:")
-    # print("Shape: {}, Mean: {:f}, STD: {:f}".format(X.shape, np.mean(X), np.std(X)))
 
     """Back Activation of Test Data"""
     H_test, XT_pred = back_activation(W, X_T)
@@ -211,42 +162,7 @@ def prot_row(df_results):
                           ignore_index=True)
     else:
         df_prot = df_results
-        # df_prot = pd.DataFrame.from_dict(d_results)
-        # df_prot = pd.DataFrame([results_templ])
-        # pf_prot = pd.DataFrame.from_records([d_results], index='TIMESTAMP')
-        # df_prot = pd.DataFrame(columns=('TIMESTAMP', 
-        #                                 'NUMBER_OF_HIDDEN', 
-        #                                 'ACCURACY_SCORE', 
-        #                                 'MAE_1ST_FL',
-        #                                 'MSE_1ST_FL',
-        #                                 'R2_1ST_FL',
-        #                                 'MAE_1ST_BA',
-        #                                 'MSE_1ST_BA',
-        #                                 'R2_1ST_BA',
-        #                                 'MAE_2ND_FL',
-        #                                 'MSE_2ND_FL',
-        #                                 'R2_2ND_FL',
-        #                                 'MAE_2ND_BA',
-        #                                 'MSE_2ND_BA',
-        #                                 'R2_2ND_BA',
-        #                                 'MSG'))
-        
-    # s_outcome = outcome.partition('<msg>')[2]
-    # s_outcome = s_outcome.partition('</msg>')[0]
-    # s_outcome = s_outcome.partition('Set ')[2]
-    # s_set = s_outcome.partition(' ')[0]
-    # s_msg = s_outcome.partition(' ')[2]
-    
-    # s_outcome = s_outcome.strip(',()')
-    # l_outcome = s_outcome.split(',')
-    # df_prot = df_prot.append({'TIMESTAMP':datetime.now(),
-    #                           'RESULT': result,
-    #                           'SAS_SET':int(s_set),
-    #                           'MSG':s_msg,
-    #                           'COUNT':n_len}, ignore_index=True)
-    
-    # df_prot = df_prot.append(d_results, 
-    #                          ignore_index=True)
+
     df_prot.to_excel(prot_file, index=False)
         
     return None
@@ -285,10 +201,6 @@ def forward_learn(H, X):
     print(reg.score(H, X))
     X_pred = reg.predict(H)
 
-    # results['MAE_1ST_FL'] = round(mean_absolute_error(X_pred, X), 3)
-    # results['MSE_1ST_FL'] = round(mean_squared_error(X_pred, X), 3)
-    # results['R2_1ST_FL'] = round(r2_score(X_pred, X, multioutput="variance_weighted"), 3)
-
     print(f'MAE {mean_absolute_error(X_pred, X)}')
     print(f'MSE {mean_squared_error(X_pred, X)}')
     print(f'R2 {r2_score(X_pred, X)}')
@@ -305,22 +217,12 @@ def forward_learn(H, X):
 
 def back_activation(W, X):
 
-    # # X = X_train.reshape(len(X_train), -1).astype('int')
-    # W = pd.DataFrame(W)
-    # # X = X.applymap(ifelse)
-    # W = W.apply(rms_norm)
-    # W = np.array(X)
-
     XT = X.transpose()
     print(f'shape of X_train {X.shape} and X_train transposed {XT.shape}')
 
     reg = LinearRegression().fit(W, XT)
     print(reg.score(W, XT))
     XT_pred = reg.predict(W)
-
-    # results['MAE_1ST_BA'] = round(mean_absolute_error(XT_pred, XT), 3)
-    # results['MSE_1ST_BA'] = round(mean_squared_error(XT_pred, XT), 3)
-    # results['R2_1ST_BA'] = round(r2_score(XT_pred, XT, multioutput="variance_weighted"), 3)
 
     print(f'MAE {mean_absolute_error(XT_pred, XT)}')
     print(f'MSE {mean_squared_error(XT_pred, XT)}')
@@ -334,10 +236,7 @@ def back_activation(W, X):
     print(HI.shape)
 
     """Hidden Norm"""
-
-    # X = H_new_train.reshape(len(H_new_train), -1).astype('int')
     H_new = pd.DataFrame(H_new)
-    # H_new = H_new.applymap(ifelse)
     H_new = H_new.apply(rms_norm, axis=1)
     H_new = np.array(H_new)
 
@@ -402,5 +301,5 @@ def load_data():
 if __name__ == '__main__':
     X_train, X_test, y_train, y_test = load_data()
     X, X_T = preprocess(X_train, X_test)
-    for i in range(10, 11, 1):
+    for i in range(7, 8, 1):
         main(X, X_T, y_train, y_test, n_hidden=i)
