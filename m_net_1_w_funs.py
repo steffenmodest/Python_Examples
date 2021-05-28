@@ -313,7 +313,8 @@ def back_activation(W, X):
 
 """KNN test with Hidden Activations"""
 
-def knn_test(H_test, H, y_train,):
+def multi_knn_test(H_test, H, y_train,):
+    """ Majority of 3 kNN with different k - Weigthed kNN has similar results with one k """
 
     # k1
     neigh = KNeighborsClassifier(n_neighbors=5, n_jobs=-1, weights='distance')
@@ -340,6 +341,15 @@ def knn_test(H_test, H, y_train,):
 
     return y_pred
 
+def knn_test(H_test, H, y_train,):
+
+    neigh = KNeighborsClassifier(n_neighbors=5, n_jobs=-1, weights='distance')
+    neigh.fit(H, y_train)
+    # Predicting the Test set results
+    y_pred = neigh.predict(H_test)
+
+    return y_pred
+
 def load_data():
 
     # Fashion MNIST Daten laden, wir wollen nur die Trainingsdaten und verwerfen die Testdaten
@@ -358,5 +368,5 @@ def load_data():
 
 if __name__ == '__main__':
     X_train, X_test, y_train, y_test = load_data()
-    for i in range(10, 60, 1):
+    for i in range(10, 11, 1):
         main(X_train, X_test, y_train, y_test, n_hidden=i)
