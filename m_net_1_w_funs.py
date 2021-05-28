@@ -30,9 +30,10 @@ from sklearn.neighbors import KNeighborsClassifier
 # from google.colab import drive
 # drive.mount('/content/drive')
 
-def main(X_train, X_test, y_train, y_test, n_hidden=47, ):
+def main(X, X_T, y_train, y_test, n_hidden=23):
 
     rs = 23  # fester Random Seed
+    np.random.seed(rs)
 
     """Load Data"""
 
@@ -49,13 +50,13 @@ def main(X_train, X_test, y_train, y_test, n_hidden=47, ):
 
     # NEW Norm
 
-    X = X_train.reshape(len(X_train), -1).astype('int')
-    X = pd.DataFrame(X)
-    X = X.applymap(ifelse)
-    X = X.apply(rms_norm, axis=1)
-    X = np.array(X)
+    # X = X_train.reshape(len(X_train), -1).astype('int')
+    # X = pd.DataFrame(X)
+    # X = X.applymap(ifelse)
+    # X = X.apply(rms_norm, axis=1)
+    # X = np.array(X)
 
-    X
+    # X
 
     # Plätte 2D Bild in einen Vektor:
     # Reshape behält die Anzahl Element in der ersten Dimension (len(X_orig) -> #Bilder)
@@ -67,11 +68,11 @@ def main(X_train, X_test, y_train, y_test, n_hidden=47, ):
     # X = preproccessing.fit_transform(X)
     # X = np.array(X)
 
-    print ("Originaldaten:")
-    print("Shape: {}, Mean: {:f}, STD: {:f}".format(X_train.shape, np.mean(X_train), np.std(X_train)))
+    # print ("Originaldaten:")
+    # print("Shape: {}, Mean: {:f}, STD: {:f}".format(X_train.shape, np.mean(X_train), np.std(X_train)))
 
-    print ("Vorbereitete Daten:")
-    print("Shape: {}, Mean: {:f}, STD: {:f}".format(X.shape, np.mean(X), np.std(X)))
+    # print ("Vorbereitete Daten:")
+    # print("Shape: {}, Mean: {:f}, STD: {:f}".format(X.shape, np.mean(X), np.std(X)))
 
     """Create Hidden Activations"""
     H = np.random.rand(60000, params['N_HIDDEN'])
@@ -105,21 +106,21 @@ def main(X_train, X_test, y_train, y_test, n_hidden=47, ):
     results['MSE_2ND_BA'] = round(mean_squared_error(XT_pred, XT), 3)
     results['R2_2ND_BA'] = round(r2_score(XT_pred, XT, multioutput="variance_weighted"), 3)
 
-    X = X_test.reshape(len(X_test), -1).astype('int')
-    X = pd.DataFrame(X)
-    X = X.applymap(ifelse)
-    X = X.apply(rms_norm, axis=1)
-    X = np.array(X)
+    # X = X_test.reshape(len(X_test), -1).astype('int')
+    # X = pd.DataFrame(X)
+    # X = X.applymap(ifelse)
+    # X = X.apply(rms_norm, axis=1)
+    # X = np.array(X)
 
-    print ("Originaldaten:")
-    print("Shape: {}, Mean: {:f}, STD: {:f}".format(X_test.shape, np.mean(X_test), np.std(X_test)))
+    # print ("Originaldaten:")
+    # print("Shape: {}, Mean: {:f}, STD: {:f}".format(X_test.shape, np.mean(X_test), np.std(X_test)))
 
-    print ("Vorbereitete Daten:")
-    print("Shape: {}, Mean: {:f}, STD: {:f}".format(X.shape, np.mean(X), np.std(X)))
+    # print ("Vorbereitete Daten:")
+    # print("Shape: {}, Mean: {:f}, STD: {:f}".format(X.shape, np.mean(X), np.std(X)))
 
     """Back Activation of Test Data"""
-    H_test, XT_pred = back_activation(W, X)
-    XT = X.transpose()
+    H_test, XT_pred = back_activation(W, X_T)
+    XT = X_T.transpose()
     results['MAE_TEST_BA'] = round(mean_absolute_error(XT_pred, XT), 3)
     results['MSE_TEST_BA'] = round(mean_squared_error(XT_pred, XT), 3)
     results['R2_TEST_BA'] = round(r2_score(XT_pred, XT, multioutput="variance_weighted"), 3)
@@ -142,6 +143,36 @@ def main(X_train, X_test, y_train, y_test, n_hidden=47, ):
     return
 
 """Own Funs"""
+
+def preprocess(X_train, X_test):
+
+    # NEW Norm
+
+    X = X_train.reshape(len(X_train), -1).astype('int')
+    X = pd.DataFrame(X)
+    X = X.applymap(ifelse)
+    X = X.apply(rms_norm, axis=1)
+    X = np.array(X)
+
+    print ("Originaldaten:")
+    print("Shape: {}, Mean: {:f}, STD: {:f}".format(X_train.shape, np.mean(X_train), np.std(X_train)))
+
+    print ("Vorbereitete Daten:")
+    print("Shape: {}, Mean: {:f}, STD: {:f}".format(X.shape, np.mean(X), np.std(X)))
+
+    X_T = X_test.reshape(len(X_test), -1).astype('int')
+    X_T = pd.DataFrame(X_T)
+    X_T = X_T.applymap(ifelse)
+    X_T = X_T.apply(rms_norm, axis=1)
+    X_T = np.array(X_T)
+
+    print ("Originaldaten:")
+    print("Shape: {}, Mean: {:f}, STD: {:f}".format(X_test.shape, np.mean(X_test), np.std(X_test)))
+
+    print ("Vorbereitete Daten:")
+    print("Shape: {}, Mean: {:f}, STD: {:f}".format(X_T.shape, np.mean(X_T), np.std(X_T)))
+
+    return X, X_T
 
 def ifelse(a):
     if a == 0:
@@ -169,17 +200,19 @@ def prot_row(df_results):
     None.
 
     """
-    
+    # Colab file dir
     # prot_file = '/content/sample_data/M-Net_Protocol.xlsx'
+
     # local file dir
     prot_file = 'M-Net_Protocol.xlsx'
     if os.path.isfile(prot_file):
         df_prot = pd.read_excel (prot_file)
         df_prot = df_prot.append(df_results, 
                           ignore_index=True)
-    # else:
-    #     # df_prot = pd.DataFrame.from_dict(d_results)
-    #     df_prot = pd.DataFrame([results_templ])
+    else:
+        df_prot = df_results
+        # df_prot = pd.DataFrame.from_dict(d_results)
+        # df_prot = pd.DataFrame([results_templ])
         # pf_prot = pd.DataFrame.from_records([d_results], index='TIMESTAMP')
         # df_prot = pd.DataFrame(columns=('TIMESTAMP', 
         #                                 'NUMBER_OF_HIDDEN', 
@@ -368,5 +401,6 @@ def load_data():
 
 if __name__ == '__main__':
     X_train, X_test, y_train, y_test = load_data()
+    X, X_T = preprocess(X_train, X_test)
     for i in range(10, 11, 1):
-        main(X_train, X_test, y_train, y_test, n_hidden=i)
+        main(X, X_T, y_train, y_test, n_hidden=i)
