@@ -102,16 +102,16 @@ def mnist_augmentation_shift(train_images, train_labels):
     extended_train_labels = np.append(train_labels, train_labels, axis=0)
  
     shift_train_data = np.roll(train_images,-1)
-    extended_train_images = np.append(train_images, shift_train_data, axis=0)
-    extended_train_labels = np.append(train_labels, train_labels, axis=0)
+    extended_train_images = np.append(extended_train_images, shift_train_data, axis=0)
+    extended_train_labels = np.append(extended_train_labels, train_labels, axis=0)
 
     shift_train_data = np.roll(train_images,28)
-    extended_train_images = np.append(train_images, shift_train_data, axis=0)
-    extended_train_labels = np.append(train_labels, train_labels, axis=0)
+    extended_train_images = np.append(extended_train_images, shift_train_data, axis=0)
+    extended_train_labels = np.append(extended_train_labels, train_labels, axis=0)
  
     shift_train_data = np.roll(train_images,-28)
-    extended_train_images = np.append(train_images, shift_train_data, axis=0)
-    extended_train_labels = np.append(train_labels, train_labels, axis=0)
+    extended_train_images = np.append(extended_train_images, shift_train_data, axis=0)
+    extended_train_labels = np.append(extended_train_labels, train_labels, axis=0)
 
     print(extended_train_labels.shape)
 
