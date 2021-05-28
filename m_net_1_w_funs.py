@@ -30,12 +30,14 @@ from sklearn.neighbors import KNeighborsClassifier
 # from google.colab import drive
 # drive.mount('/content/drive')
 
-def main(X, X_T, y_train, y_test, n_hidden=23):
+def main(X, X_T, y_train, y_test, s_msg = " ", n_hidden=23):
 
     rs = 23  # fester Random Seed
     np.random.seed(rs)
 
     results, params = set_params_results(n_hidden)
+    results['MSG'] = s_msg
+
 
     """Create Hidden Activations"""
     H = np.random.rand(len(y_train), params['N_HIDDEN'])
@@ -310,11 +312,15 @@ def knn_test(H_test, H, y_train,):
 
     return y_pred
 
-def load_data():
+def load_data(n_subset = False):
 
     # Fashion MNIST Daten laden, wir wollen nur die Trainingsdaten und verwerfen die Testdaten
     # (X_train, y_train), (X_test, y_test) = fashion_mnist.load_data()
     (X_train, y_train), (X_test, y_test) = mnist.load_data()
+
+    if n_subset:
+        X_train = X_train[:n_subset]
+        y_train = y_train[:n_subset]
 
     print(X_train.shape)
     print(X_test.shape)
@@ -327,8 +333,8 @@ def load_data():
 # Code starting point
 
 if __name__ == '__main__':
-    X_train, X_test, y_train, y_test = load_data()
+    X_train, X_test, y_train, y_test = load_data(1000)
     X_train, y_train = mnist_augmentation_shift(X_train, y_train)
     X, X_T = preprocess(X_train, X_test)
-    for i in range(10, 60, 2):
-        main(X, X_T, y_train, y_test, n_hidden=i)
+    for i in range(10, 11, 1):
+        main(X, X_T, y_train, y_test, s_msg="Test Code",n_hidden=i)
