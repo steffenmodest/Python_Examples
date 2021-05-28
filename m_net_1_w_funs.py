@@ -151,11 +151,11 @@ def prot_row(df_results):
     None.
 
     """
-    # Colab file dir
-    # prot_file = '/content/sample_data/M-Net_Protocol.xlsx'
+    # Colab file dir also on local 
+    prot_file = '/content/sample_data/M-Net_Protocol.xlsx'
 
-    # local file dir
-    prot_file = 'M-Net_Protocol.xlsx'
+    # local file dir old
+    # prot_file = 'M-Net_Protocol.xlsx'
     if os.path.isfile(prot_file):
         df_prot = pd.read_excel (prot_file)
         df_prot = df_prot.append(df_results, 
