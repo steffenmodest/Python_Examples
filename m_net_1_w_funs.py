@@ -333,7 +333,7 @@ def load_data(n_subset = False):
 # Code starting point
 
 if __name__ == '__main__':
-    X_train, X_test, y_train, y_test = load_data(1000)
+    X_train, X_test, y_train, y_test = load_data()
     X_train, y_train = mnist_augmentation_shift(X_train, y_train)
     X, X_T = preprocess(X_train, X_test)
     for i in range(10, 11, 1):
