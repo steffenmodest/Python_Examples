@@ -97,6 +97,26 @@ def main(X, X_T, y_train, y_test, s_msg = " ", n_hidden=23):
 
 """Own Funs"""
 
+def mnist_augmentation_noise(train_images, train_labels):
+
+    noise_matrix = np.random.random((28,28))
+    mnist_noise_matrix = noise_matrix * 255
+    new_train_data = (train_images + mnist_noise_matrix) / 2
+
+    extended_train_images = np.append(train_images, new_train_data, axis=0)
+    extended_train_labels = np.append(train_labels, train_labels, axis=0)
+
+    print(extended_train_labels.shape)
+
+    print ("original data:")
+    print("Shape: {}, Mean: {:f}, STD: {:f}".format(train_images.shape, np.mean(train_images), np.std(train_images)))
+
+    print ("augmentated data:")
+    print("Shape: {}, Mean: {:f}, STD: {:f}".format(extended_train_images.shape, np.mean(extended_train_images), np.std(extended_train_images)))
+
+    return extended_train_images, extended_train_labels
+
+
 def mnist_augmentation_shift(train_images, train_labels):
 
     shift_train_data = np.roll(train_images,1)
@@ -334,7 +354,11 @@ def load_data(n_subset = False):
 
 if __name__ == '__main__':
     X_train, X_test, y_train, y_test = load_data()
-    X_train, y_train = mnist_augmentation_shift(X_train, y_train)
+    # X_train, X_test, y_train, y_test = load_data(1000)
+
+    # X_train, y_train = mnist_augmentation_shift(X_train, y_train)
+    X_train, y_train = mnist_augmentation_noise(X_train, y_train)
+
     X, X_T = preprocess(X_train, X_test)
-    for i in range(10, 11, 1):
-        main(X, X_T, y_train, y_test, s_msg="Test Code",n_hidden=i)
+    for i in range(10, 66, 6):
+        main(X, X_T, y_train, y_test, s_msg="k5 - full - Noise Augmentation",n_hidden=i)
