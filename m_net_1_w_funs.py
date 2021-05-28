@@ -38,7 +38,7 @@ def main(X, X_T, y_train, y_test, n_hidden=23):
     results, params = set_params_results(n_hidden)
 
     """Create Hidden Activations"""
-    H = np.random.rand(60000, params['N_HIDDEN'])
+    H = np.random.rand(len(y_train), params['N_HIDDEN'])
     print(H.shape)
     print(H)
 
@@ -94,6 +94,34 @@ def main(X, X_T, y_train, y_test, n_hidden=23):
     return
 
 """Own Funs"""
+
+def mnist_augmentation_shift(train_images, train_labels):
+
+    shift_train_data = np.roll(train_images,1)
+    extended_train_images = np.append(train_images, shift_train_data, axis=0)
+    extended_train_labels = np.append(train_labels, train_labels, axis=0)
+ 
+    shift_train_data = np.roll(train_images,-1)
+    extended_train_images = np.append(train_images, shift_train_data, axis=0)
+    extended_train_labels = np.append(train_labels, train_labels, axis=0)
+
+    shift_train_data = np.roll(train_images,28)
+    extended_train_images = np.append(train_images, shift_train_data, axis=0)
+    extended_train_labels = np.append(train_labels, train_labels, axis=0)
+ 
+    shift_train_data = np.roll(train_images,-28)
+    extended_train_images = np.append(train_images, shift_train_data, axis=0)
+    extended_train_labels = np.append(train_labels, train_labels, axis=0)
+
+    print(extended_train_labels.shape)
+
+    print ("original data:")
+    print("Shape: {}, Mean: {:f}, STD: {:f}".format(train_images.shape, np.mean(train_images), np.std(train_images)))
+
+    print ("augmentated data:")
+    print("Shape: {}, Mean: {:f}, STD: {:f}".format(extended_train_images.shape, np.mean(extended_train_images), np.std(extended_train_images)))
+
+    return extended_train_images, extended_train_labels
 
 def preprocess(X_train, X_test):
 
@@ -152,10 +180,10 @@ def prot_row(df_results):
 
     """
     # Colab file dir also on local 
-    prot_file = '/content/sample_data/M-Net_Protocol.xlsx'
+    # prot_file = '/content/sample_data/M-Net_Protocol.xlsx'
 
     # local file dir old
-    # prot_file = 'M-Net_Protocol.xlsx'
+    prot_file = 'M-Net_Protocol.xlsx'
     if os.path.isfile(prot_file):
         df_prot = pd.read_excel (prot_file)
         df_prot = df_prot.append(df_results, 
@@ -300,6 +328,7 @@ def load_data():
 
 if __name__ == '__main__':
     X_train, X_test, y_train, y_test = load_data()
+    X_train, y_train = mnist_augmentation_shift(X_train, y_train)
     X, X_T = preprocess(X_train, X_test)
-    for i in range(7, 8, 1):
+    for i in range(10, 60, 2):
         main(X, X_T, y_train, y_test, n_hidden=i)
