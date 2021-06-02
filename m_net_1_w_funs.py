@@ -27,6 +27,8 @@ from sklearn.metrics import accuracy_score, classification_report
 from sklearn.linear_model import LinearRegression
 from sklearn.neighbors import KNeighborsClassifier
 
+from scipy import ndimage
+
 # from google.colab import drive
 # drive.mount('/content/drive')
 
@@ -103,9 +105,34 @@ def mnist_augmentation_noise(train_images, train_labels):
     mnist_noise_matrix = noise_matrix * 255
     new_train_data = (train_images + mnist_noise_matrix) / 2
 
-    extended_train_images = np.append(train_images, new_train_data, axis=0)
-    extended_train_labels = np.append(train_labels, train_labels, axis=0)
+#    extended_train_images = np.append(train_images, new_train_data, axis=0)
+ #   extended_train_labels = np.append(train_labels, train_labels, axis=0)
+    extended_train_images = new_train_data
+    extended_train_labels = train_labels
 
+    print(extended_train_labels.shape)
+
+    print ("original data:")
+    print("Shape: {}, Mean: {:f}, STD: {:f}".format(train_images.shape, np.mean(train_images), np.std(train_images)))
+
+    print ("augmentated data:")
+    print("Shape: {}, Mean: {:f}, STD: {:f}".format(extended_train_images.shape, np.mean(extended_train_images), np.std(extended_train_images)))
+
+    return extended_train_images, extended_train_labels
+
+
+def mnist_augmentation_rotate(train_images, train_labels):
+
+    extended_train_images = train_images
+    print(extended_train_images.shape)
+
+    for t_image in train_images:
+        # image = ndimage.rotate(t_image, 45, reshape=False, mode='mirror', axes=(1,0))
+        image = ndimage.rotate(t_image, -45, reshape=False, axes=(1,0))
+        image = image.reshape((28,28))
+        extended_train_images = np.append(extended_train_images, [image], axis=0)
+
+    extended_train_labels = np.append(train_labels, train_labels, axis=0)
     print(extended_train_labels.shape)
 
     print ("original data:")
@@ -357,7 +384,8 @@ if __name__ == '__main__':
     # X_train, X_test, y_train, y_test = load_data(1000)
 
     # X_train, y_train = mnist_augmentation_shift(X_train, y_train)
-    X_train, y_train = mnist_augmentation_noise(X_train, y_train)
+    # X_train, y_train = mnist_augmentation_noise(X_train, y_train)
+    X_train, y_train = mnist_augmentation_rotate(X_train, y_train)
 
     X, X_T = preprocess(X_train, X_test)
     for i in range(10, 66, 6):
