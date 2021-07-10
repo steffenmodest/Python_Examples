@@ -27,54 +27,22 @@ from sklearn.metrics import accuracy_score, classification_report
 from sklearn.linear_model import LinearRegression
 from sklearn.neighbors import KNeighborsClassifier
 
+from scipy import ndimage
+
 # from google.colab import drive
 # drive.mount('/content/drive')
 
-def main(X_train, X_test, y_train, y_test, n_hidden=47, ):
+def main(X, X_T, y_train, y_test, s_msg = " ", n_hidden=23):
 
     rs = 23  # fester Random Seed
-
-    """Load Data"""
-
-    # # Fashion MNIST Daten laden, wir wollen nur die Trainingsdaten und verwerfen die Testdaten
-    # # (X_train, y_train), (X_test, y_test) = fashion_mnist.load_data()
-    # (X_train, y_train), (X_test, y_test) = mnist.load_data()
-
-    # print(X_train.shape)
-    # print(X_test.shape)
-    # print(y_train.shape)
-    # print(y_test.shape)
+    np.random.seed(rs)
 
     results, params = set_params_results(n_hidden)
+    results['MSG'] = s_msg
 
-    # NEW Norm
-
-    X = X_train.reshape(len(X_train), -1).astype('int')
-    X = pd.DataFrame(X)
-    X = X.applymap(ifelse)
-    X = X.apply(rms_norm, axis=1)
-    X = np.array(X)
-
-    X
-
-    # Plätte 2D Bild in einen Vektor:
-    # Reshape behält die Anzahl Element in der ersten Dimension (len(X_orig) -> #Bilder)
-    # die restlichen Zellen des Arrays (-1 -> Pixel) bekommen alle ihre eigene Dimension
-    # X = X_train.reshape(len(X_train), -1).astype('float64')
-
-    # # Dimensionen um den Mittelpunkt zentrieren
-    # preproccessing = StandardScaler()
-    # X = preproccessing.fit_transform(X)
-    # X = np.array(X)
-
-    print ("Originaldaten:")
-    print("Shape: {}, Mean: {:f}, STD: {:f}".format(X_train.shape, np.mean(X_train), np.std(X_train)))
-
-    print ("Vorbereitete Daten:")
-    print("Shape: {}, Mean: {:f}, STD: {:f}".format(X.shape, np.mean(X), np.std(X)))
 
     """Create Hidden Activations"""
-    H = np.random.rand(60000, params['N_HIDDEN'])
+    H = np.random.rand(len(y_train), params['N_HIDDEN'])
     print(H.shape)
     print(H)
 
@@ -105,21 +73,9 @@ def main(X_train, X_test, y_train, y_test, n_hidden=47, ):
     results['MSE_2ND_BA'] = round(mean_squared_error(XT_pred, XT), 3)
     results['R2_2ND_BA'] = round(r2_score(XT_pred, XT, multioutput="variance_weighted"), 3)
 
-    X = X_test.reshape(len(X_test), -1).astype('int')
-    X = pd.DataFrame(X)
-    X = X.applymap(ifelse)
-    X = X.apply(rms_norm, axis=1)
-    X = np.array(X)
-
-    print ("Originaldaten:")
-    print("Shape: {}, Mean: {:f}, STD: {:f}".format(X_test.shape, np.mean(X_test), np.std(X_test)))
-
-    print ("Vorbereitete Daten:")
-    print("Shape: {}, Mean: {:f}, STD: {:f}".format(X.shape, np.mean(X), np.std(X)))
-
     """Back Activation of Test Data"""
-    H_test, XT_pred = back_activation(W, X)
-    XT = X.transpose()
+    H_test, XT_pred = back_activation(W, X_T)
+    XT = X_T.transpose()
     results['MAE_TEST_BA'] = round(mean_absolute_error(XT_pred, XT), 3)
     results['MSE_TEST_BA'] = round(mean_squared_error(XT_pred, XT), 3)
     results['R2_TEST_BA'] = round(r2_score(XT_pred, XT, multioutput="variance_weighted"), 3)
@@ -142,6 +98,109 @@ def main(X_train, X_test, y_train, y_test, n_hidden=47, ):
     return
 
 """Own Funs"""
+
+def mnist_augmentation_noise(train_images, train_labels):
+
+    noise_matrix = np.random.random((28,28))
+    mnist_noise_matrix = noise_matrix * 255
+    new_train_data = (train_images + mnist_noise_matrix) / 2
+
+#    extended_train_images = np.append(train_images, new_train_data, axis=0)
+ #   extended_train_labels = np.append(train_labels, train_labels, axis=0)
+    extended_train_images = new_train_data
+    extended_train_labels = train_labels
+
+    print(extended_train_labels.shape)
+
+    print ("original data:")
+    print("Shape: {}, Mean: {:f}, STD: {:f}".format(train_images.shape, np.mean(train_images), np.std(train_images)))
+
+    print ("augmentated data:")
+    print("Shape: {}, Mean: {:f}, STD: {:f}".format(extended_train_images.shape, np.mean(extended_train_images), np.std(extended_train_images)))
+
+    return extended_train_images, extended_train_labels
+
+
+def mnist_augmentation_rotate(train_images, train_labels):
+
+    extended_train_images = train_images
+    print(extended_train_images.shape)
+
+    for t_image in train_images:
+        # image = ndimage.rotate(t_image, 45, reshape=False, mode='mirror', axes=(1,0))
+        image = ndimage.rotate(t_image, -45, reshape=False, axes=(1,0))
+        image = image.reshape((28,28))
+        extended_train_images = np.append(extended_train_images, [image], axis=0)
+
+    extended_train_labels = np.append(train_labels, train_labels, axis=0)
+    print(extended_train_labels.shape)
+
+    print ("original data:")
+    print("Shape: {}, Mean: {:f}, STD: {:f}".format(train_images.shape, np.mean(train_images), np.std(train_images)))
+
+    print ("augmentated data:")
+    print("Shape: {}, Mean: {:f}, STD: {:f}".format(extended_train_images.shape, np.mean(extended_train_images), np.std(extended_train_images)))
+
+    return extended_train_images, extended_train_labels
+
+
+def mnist_augmentation_shift(train_images, train_labels):
+
+    shift_train_data = np.roll(train_images,1)
+    extended_train_images = np.append(train_images, shift_train_data, axis=0)
+    extended_train_labels = np.append(train_labels, train_labels, axis=0)
+ 
+    shift_train_data = np.roll(train_images,-1)
+    extended_train_images = np.append(extended_train_images, shift_train_data, axis=0)
+    extended_train_labels = np.append(extended_train_labels, train_labels, axis=0)
+
+    shift_train_data = np.roll(train_images,28)
+    extended_train_images = np.append(extended_train_images, shift_train_data, axis=0)
+    extended_train_labels = np.append(extended_train_labels, train_labels, axis=0)
+ 
+    shift_train_data = np.roll(train_images,-28)
+    extended_train_images = np.append(extended_train_images, shift_train_data, axis=0)
+    extended_train_labels = np.append(extended_train_labels, train_labels, axis=0)
+
+    print(extended_train_labels.shape)
+
+    print ("original data:")
+    print("Shape: {}, Mean: {:f}, STD: {:f}".format(train_images.shape, np.mean(train_images), np.std(train_images)))
+
+    print ("augmentated data:")
+    print("Shape: {}, Mean: {:f}, STD: {:f}".format(extended_train_images.shape, np.mean(extended_train_images), np.std(extended_train_images)))
+
+    return extended_train_images, extended_train_labels
+
+def preprocess(X_train, X_test):
+
+    # NEW Norm
+
+    X = X_train.reshape(len(X_train), -1).astype('int')
+    X = pd.DataFrame(X)
+    X = X.applymap(ifelse)
+    X = X.apply(rms_norm, axis=1)
+    X = np.array(X)
+
+    print ("Originaldaten:")
+    print("Shape: {}, Mean: {:f}, STD: {:f}".format(X_train.shape, np.mean(X_train), np.std(X_train)))
+
+    print ("Vorbereitete Daten:")
+    print("Shape: {}, Mean: {:f}, STD: {:f}".format(X.shape, np.mean(X), np.std(X)))
+
+    X_T = X_test.reshape(len(X_test), -1).astype('int')
+    X_T = pd.DataFrame(X_T)
+    X_T = X_T.applymap(ifelse)
+    X_T = X_T.apply(rms_norm, axis=1)
+    X_T = np.array(X_T)
+
+    print ("Originaldaten:")
+    print("Shape: {}, Mean: {:f}, STD: {:f}".format(X_test.shape, np.mean(X_test), np.std(X_test)))
+
+    print ("Vorbereitete Daten:")
+    print("Shape: {}, Mean: {:f}, STD: {:f}".format(X_T.shape, np.mean(X_T), np.std(X_T)))
+
+    return X, X_T
 
 def ifelse(a):
     if a == 0:
@@ -169,51 +228,18 @@ def prot_row(df_results):
     None.
 
     """
-    
+    # Colab file dir also on local 
     # prot_file = '/content/sample_data/M-Net_Protocol.xlsx'
-    # local file dir
+
+    # local file dir old
     prot_file = 'M-Net_Protocol.xlsx'
     if os.path.isfile(prot_file):
         df_prot = pd.read_excel (prot_file)
         df_prot = df_prot.append(df_results, 
                           ignore_index=True)
-    # else:
-    #     # df_prot = pd.DataFrame.from_dict(d_results)
-    #     df_prot = pd.DataFrame([results_templ])
-        # pf_prot = pd.DataFrame.from_records([d_results], index='TIMESTAMP')
-        # df_prot = pd.DataFrame(columns=('TIMESTAMP', 
-        #                                 'NUMBER_OF_HIDDEN', 
-        #                                 'ACCURACY_SCORE', 
-        #                                 'MAE_1ST_FL',
-        #                                 'MSE_1ST_FL',
-        #                                 'R2_1ST_FL',
-        #                                 'MAE_1ST_BA',
-        #                                 'MSE_1ST_BA',
-        #                                 'R2_1ST_BA',
-        #                                 'MAE_2ND_FL',
-        #                                 'MSE_2ND_FL',
-        #                                 'R2_2ND_FL',
-        #                                 'MAE_2ND_BA',
-        #                                 'MSE_2ND_BA',
-        #                                 'R2_2ND_BA',
-        #                                 'MSG'))
-        
-    # s_outcome = outcome.partition('<msg>')[2]
-    # s_outcome = s_outcome.partition('</msg>')[0]
-    # s_outcome = s_outcome.partition('Set ')[2]
-    # s_set = s_outcome.partition(' ')[0]
-    # s_msg = s_outcome.partition(' ')[2]
-    
-    # s_outcome = s_outcome.strip(',()')
-    # l_outcome = s_outcome.split(',')
-    # df_prot = df_prot.append({'TIMESTAMP':datetime.now(),
-    #                           'RESULT': result,
-    #                           'SAS_SET':int(s_set),
-    #                           'MSG':s_msg,
-    #                           'COUNT':n_len}, ignore_index=True)
-    
-    # df_prot = df_prot.append(d_results, 
-    #                          ignore_index=True)
+    else:
+        df_prot = df_results
+
     df_prot.to_excel(prot_file, index=False)
         
     return None
@@ -252,10 +278,6 @@ def forward_learn(H, X):
     print(reg.score(H, X))
     X_pred = reg.predict(H)
 
-    # results['MAE_1ST_FL'] = round(mean_absolute_error(X_pred, X), 3)
-    # results['MSE_1ST_FL'] = round(mean_squared_error(X_pred, X), 3)
-    # results['R2_1ST_FL'] = round(r2_score(X_pred, X, multioutput="variance_weighted"), 3)
-
     print(f'MAE {mean_absolute_error(X_pred, X)}')
     print(f'MSE {mean_squared_error(X_pred, X)}')
     print(f'R2 {r2_score(X_pred, X)}')
@@ -272,22 +294,12 @@ def forward_learn(H, X):
 
 def back_activation(W, X):
 
-    # # X = X_train.reshape(len(X_train), -1).astype('int')
-    # W = pd.DataFrame(W)
-    # # X = X.applymap(ifelse)
-    # W = W.apply(rms_norm)
-    # W = np.array(X)
-
     XT = X.transpose()
     print(f'shape of X_train {X.shape} and X_train transposed {XT.shape}')
 
     reg = LinearRegression().fit(W, XT)
     print(reg.score(W, XT))
     XT_pred = reg.predict(W)
-
-    # results['MAE_1ST_BA'] = round(mean_absolute_error(XT_pred, XT), 3)
-    # results['MSE_1ST_BA'] = round(mean_squared_error(XT_pred, XT), 3)
-    # results['R2_1ST_BA'] = round(r2_score(XT_pred, XT, multioutput="variance_weighted"), 3)
 
     print(f'MAE {mean_absolute_error(XT_pred, XT)}')
     print(f'MSE {mean_squared_error(XT_pred, XT)}')
@@ -301,10 +313,7 @@ def back_activation(W, X):
     print(HI.shape)
 
     """Hidden Norm"""
-
-    # X = H_new_train.reshape(len(H_new_train), -1).astype('int')
     H_new = pd.DataFrame(H_new)
-    # H_new = H_new.applymap(ifelse)
     H_new = H_new.apply(rms_norm, axis=1)
     H_new = np.array(H_new)
 
@@ -350,11 +359,15 @@ def knn_test(H_test, H, y_train,):
 
     return y_pred
 
-def load_data():
+def load_data(n_subset = False):
 
     # Fashion MNIST Daten laden, wir wollen nur die Trainingsdaten und verwerfen die Testdaten
     # (X_train, y_train), (X_test, y_test) = fashion_mnist.load_data()
     (X_train, y_train), (X_test, y_test) = mnist.load_data()
+
+    if n_subset:
+        X_train = X_train[:n_subset]
+        y_train = y_train[:n_subset]
 
     print(X_train.shape)
     print(X_test.shape)
@@ -368,5 +381,12 @@ def load_data():
 
 if __name__ == '__main__':
     X_train, X_test, y_train, y_test = load_data()
-    for i in range(10, 11, 1):
-        main(X_train, X_test, y_train, y_test, n_hidden=i)
+    # X_train, X_test, y_train, y_test = load_data(1000)
+
+    # X_train, y_train = mnist_augmentation_shift(X_train, y_train)
+    # X_train, y_train = mnist_augmentation_noise(X_train, y_train)
+    X_train, y_train = mnist_augmentation_rotate(X_train, y_train)
+
+    X, X_T = preprocess(X_train, X_test)
+    for i in range(10, 66, 6):
+        main(X, X_T, y_train, y_test, s_msg="k5 - full - Noise Augmentation",n_hidden=i)
