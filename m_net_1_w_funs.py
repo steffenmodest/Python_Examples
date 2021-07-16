@@ -30,7 +30,7 @@ from scipy import ndimage
 # from google.colab import drive
 # drive.mount('/content/drive')
 
-def main(X, X_T, y_train, y_test, s_msg = " ", n_hidden=23):
+def main(X, X_BA, X_T, y_train, y_test, s_msg = " ", n_hidden=23):
 
     rs = 23  # fester Random Seed
     np.random.seed(rs)
@@ -116,7 +116,7 @@ def mnist_augmentation_noise(train_images, train_labels):
     print ("NOISE augmentated data:")
     print("Shape: {}, Mean: {:f}, STD: {:f}".format(extended_train_images.shape, np.mean(extended_train_images), np.std(extended_train_images)))
 
-    return extended_train_images, extended_train_labels
+    return train_images, extended_train_images, extended_train_labels
 
 
 def mnist_augmentation_rotate(train_images, train_labels):
@@ -382,11 +382,19 @@ if __name__ == '__main__':
     # X_train, X_test, y_train, y_test = load_data(1000)
 
     # X_train, y_train = mnist_augmentation_shift(X_train, y_train)
-    X_train, y_train = mnist_augmentation_noise(X_train, y_train)
+    X_train, X_BA_train, y_train = mnist_augmentation_noise(X_train, y_train)
     # X_train, y_train = mnist_augmentation_rotate(X_train, y_train)
+    # X_BA_train = X_train # If no augmentation
 
     X = preprocess(X_train)
     X_T = preprocess(X_test)
+    X_BA = preprocess(X_BA_train)
     
     for i in range(10, 11, 1):
-        main(X, X_T, y_train, y_test, s_msg="k5 - full - Noise Augmentation",n_hidden=i)
+        main(X,
+        X_BA,
+        X_T,
+        y_train,
+        y_test, 
+        s_msg="k5 - full - Noise Augmentation", 
+        n_hidden=i)
