@@ -170,9 +170,9 @@ def mnist_augmentation_shift(train_images, train_labels):
 
     return extended_train_images, extended_train_labels
 
-def preprocess(X_train, X_test):
+def preprocess(X_train):
 
-    # NEW Norm
+    # NEW RMS Norm
 
     X = X_train.reshape(len(X_train), -1).astype('int')
     X = pd.DataFrame(X)
@@ -180,25 +180,25 @@ def preprocess(X_train, X_test):
     X = X.apply(rms_norm, axis=1)
     X = np.array(X)
 
-    print ("Train Originaldaten:")
+    print ("Originaldaten:")
     print("Shape: {}, Mean: {:f}, STD: {:f}".format(X_train.shape, np.mean(X_train), np.std(X_train)))
 
-    print ("Train RMS Vorbereitete Daten:")
+    print ("RMS Vorbereitete Daten:")
     print("Shape: {}, Mean: {:f}, STD: {:f}".format(X.shape, np.mean(X), np.std(X)))
 
-    X_T = X_test.reshape(len(X_test), -1).astype('int')
-    X_T = pd.DataFrame(X_T)
-    X_T = X_T.applymap(ifelse)
-    X_T = X_T.apply(rms_norm, axis=1)
-    X_T = np.array(X_T)
+    # X_T = X_test.reshape(len(X_test), -1).astype('int')
+    # X_T = pd.DataFrame(X_T)
+    # X_T = X_T.applymap(ifelse)
+    # X_T = X_T.apply(rms_norm, axis=1)
+    # X_T = np.array(X_T)
 
-    print ("Test Originaldaten:")
-    print("Shape: {}, Mean: {:f}, STD: {:f}".format(X_test.shape, np.mean(X_test), np.std(X_test)))
+    # print ("Test Originaldaten:")
+    # print("Shape: {}, Mean: {:f}, STD: {:f}".format(X_test.shape, np.mean(X_test), np.std(X_test)))
 
-    print ("Test RMS Vorbereitete Daten:")
-    print("Shape: {}, Mean: {:f}, STD: {:f}".format(X_T.shape, np.mean(X_T), np.std(X_T)))
+    # print ("Test RMS Vorbereitete Daten:")
+    # print("Shape: {}, Mean: {:f}, STD: {:f}".format(X_T.shape, np.mean(X_T), np.std(X_T)))
 
-    return X, X_T
+    return X
 
 def ifelse(a):
     if a == 0:
@@ -385,6 +385,8 @@ if __name__ == '__main__':
     X_train, y_train = mnist_augmentation_noise(X_train, y_train)
     # X_train, y_train = mnist_augmentation_rotate(X_train, y_train)
 
-    X, X_T = preprocess(X_train, X_test)
+    X = preprocess(X_train)
+    X_T = preprocess(X_test)
+    
     for i in range(10, 11, 1):
         main(X, X_T, y_train, y_test, s_msg="k5 - full - Noise Augmentation",n_hidden=i)
