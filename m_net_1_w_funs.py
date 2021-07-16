@@ -25,18 +25,22 @@ from sklearn.metrics import accuracy_score, classification_report
 from sklearn.linear_model import LinearRegression
 from sklearn.neighbors import KNeighborsClassifier
 
+from scipy import ndimage
+
 # from google.colab import drive
 # drive.mount('/content/drive')
 
-def main(X, X_T, y_train, y_test, n_hidden=23):
+def main(X, X_T, y_train, y_test, s_msg = " ", n_hidden=23):
 
     rs = 23  # fester Random Seed
     np.random.seed(rs)
 
     results, params = set_params_results(n_hidden)
+    results['MSG'] = s_msg
+
 
     """Create Hidden Activations"""
-    H = np.random.rand(60000, params['N_HIDDEN'])
+    H = np.random.rand(len(y_train), params['N_HIDDEN'])
     print(H.shape)
     print(H)
 
@@ -92,6 +96,79 @@ def main(X, X_T, y_train, y_test, n_hidden=23):
     return
 
 """Own Funs"""
+
+def mnist_augmentation_noise(train_images, train_labels):
+
+    noise_matrix = np.random.random((28,28))
+    mnist_noise_matrix = noise_matrix * 255
+    new_train_data = (train_images + mnist_noise_matrix) / 2
+
+#    extended_train_images = np.append(train_images, new_train_data, axis=0)
+ #   extended_train_labels = np.append(train_labels, train_labels, axis=0)
+    extended_train_images = new_train_data
+    extended_train_labels = train_labels
+
+    print(extended_train_labels.shape)
+
+    print ("original data:")
+    print("Shape: {}, Mean: {:f}, STD: {:f}".format(train_images.shape, np.mean(train_images), np.std(train_images)))
+
+    print ("augmentated data:")
+    print("Shape: {}, Mean: {:f}, STD: {:f}".format(extended_train_images.shape, np.mean(extended_train_images), np.std(extended_train_images)))
+
+    return extended_train_images, extended_train_labels
+
+
+def mnist_augmentation_rotate(train_images, train_labels):
+
+    extended_train_images = train_images
+    print(extended_train_images.shape)
+
+    for t_image in train_images:
+        # image = ndimage.rotate(t_image, 45, reshape=False, mode='mirror', axes=(1,0))
+        image = ndimage.rotate(t_image, -45, reshape=False, axes=(1,0))
+        image = image.reshape((28,28))
+        extended_train_images = np.append(extended_train_images, [image], axis=0)
+
+    extended_train_labels = np.append(train_labels, train_labels, axis=0)
+    print(extended_train_labels.shape)
+
+    print ("original data:")
+    print("Shape: {}, Mean: {:f}, STD: {:f}".format(train_images.shape, np.mean(train_images), np.std(train_images)))
+
+    print ("augmentated data:")
+    print("Shape: {}, Mean: {:f}, STD: {:f}".format(extended_train_images.shape, np.mean(extended_train_images), np.std(extended_train_images)))
+
+    return extended_train_images, extended_train_labels
+
+
+def mnist_augmentation_shift(train_images, train_labels):
+
+    shift_train_data = np.roll(train_images,1)
+    extended_train_images = np.append(train_images, shift_train_data, axis=0)
+    extended_train_labels = np.append(train_labels, train_labels, axis=0)
+ 
+    shift_train_data = np.roll(train_images,-1)
+    extended_train_images = np.append(extended_train_images, shift_train_data, axis=0)
+    extended_train_labels = np.append(extended_train_labels, train_labels, axis=0)
+
+    shift_train_data = np.roll(train_images,28)
+    extended_train_images = np.append(extended_train_images, shift_train_data, axis=0)
+    extended_train_labels = np.append(extended_train_labels, train_labels, axis=0)
+ 
+    shift_train_data = np.roll(train_images,-28)
+    extended_train_images = np.append(extended_train_images, shift_train_data, axis=0)
+    extended_train_labels = np.append(extended_train_labels, train_labels, axis=0)
+
+    print(extended_train_labels.shape)
+
+    print ("original data:")
+    print("Shape: {}, Mean: {:f}, STD: {:f}".format(train_images.shape, np.mean(train_images), np.std(train_images)))
+
+    print ("augmentated data:")
+    print("Shape: {}, Mean: {:f}, STD: {:f}".format(extended_train_images.shape, np.mean(extended_train_images), np.std(extended_train_images)))
+
+    return extended_train_images, extended_train_labels
 
 def preprocess(X_train, X_test):
 
@@ -150,10 +227,10 @@ def prot_row(df_results):
 
     """
     # Colab file dir also on local 
-    prot_file = '/content/sample_data/M-Net_Protocol.xlsx'
+    # prot_file = '/content/sample_data/M-Net_Protocol.xlsx'
 
     # local file dir old
-    # prot_file = 'M-Net_Protocol.xlsx'
+    prot_file = 'M-Net_Protocol.xlsx'
     if os.path.isfile(prot_file):
         df_prot = pd.read_excel (prot_file)
         df_prot = df_prot.append(df_results, 
@@ -280,11 +357,15 @@ def knn_test(H_test, H, y_train,):
 
     return y_pred
 
-def load_data():
+def load_data(n_subset = False):
 
     # Fashion MNIST Daten laden, wir wollen nur die Trainingsdaten und verwerfen die Testdaten
     # (X_train, y_train), (X_test, y_test) = fashion_mnist.load_data()
     (X_train, y_train), (X_test, y_test) = mnist.load_data()
+
+    if n_subset:
+        X_train = X_train[:n_subset]
+        y_train = y_train[:n_subset]
 
     print(X_train.shape)
     print(X_test.shape)
@@ -298,6 +379,12 @@ def load_data():
 
 if __name__ == '__main__':
     X_train, X_test, y_train, y_test = load_data()
+    # X_train, X_test, y_train, y_test = load_data(1000)
+
+    # X_train, y_train = mnist_augmentation_shift(X_train, y_train)
+    # X_train, y_train = mnist_augmentation_noise(X_train, y_train)
+    X_train, y_train = mnist_augmentation_rotate(X_train, y_train)
+
     X, X_T = preprocess(X_train, X_test)
-    for i in range(7, 8, 1):
-        main(X, X_T, y_train, y_test, n_hidden=i)
+    for i in range(10, 66, 6):
+        main(X, X_T, y_train, y_test, s_msg="k5 - full - Noise Augmentation",n_hidden=i)
